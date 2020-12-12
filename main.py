@@ -185,7 +185,7 @@ def main(path_yaml):
         num_train_steps = int(
            train_data.data_num / args.train_batch_size / args.gradient_accumulation_steps * args.num_train_epochs)
 
-    model = BertForFIT.from_pretrained("../../pretrained/"+args.bert_model,
+    model = BertForFIT.from_pretrained("./pretrained/"+args.bert_model,
               cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(args.local_rank))
     if args.fp16:
         model.half()
@@ -282,12 +282,12 @@ def main(path_yaml):
         logging("  Batch size = {}".format(args.eval_batch_size))
         valid_data = dataloader.Dataloader(args.data_dir, data_file['valid'], args.cache_size, args.eval_batch_size, device)
         model.eval()
-        eval_loss, eval_accuracy, eval_h_acc, eval_m_acc = 0, 0, 0, 0
-        nb_eval_steps, nb_eval_examples, nb_eval_h_examples = 0, 0, 0
+        eval_loss, eval_accuracy = 0, 0 
+        nb_eval_steps, nb_eval_examples = 0, 0
         for inp, tgt in valid_data.__getitem__(shuffle=False):
 
             with torch.no_grad():
-                tmp_eval_loss, tmp_eval_accuracy, tmp_h_acc, tmp_m_acc = model(inp, tgt)
+                tmp_eval_loss, tmp_eval_accuracy = model(inp, tgt)
             if n_gpu > 1:
                 tmp_eval_loss = tmp_eval_loss.mean()
                 tmp_eval_accuracy = tmp_eval_accuracy.sum()

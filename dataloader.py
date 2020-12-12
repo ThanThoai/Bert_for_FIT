@@ -208,7 +208,7 @@ class Dataloader(object):
 if __name__ == "__main__":
 
     data_dir = ""
-    folder_model = "../../pretrained"
+    folder_model = "./pretrained"
     model_name = "bert-base-uncased"
     parser = argparse.ArgumentParser(description='BERT for FIT task')
     args = parser.parse_args()
