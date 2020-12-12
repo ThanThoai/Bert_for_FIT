@@ -1,0 +1,29 @@
+data_dir : "./data"
+bert_model : "bert-large-uncased"
+task_name : "FIT"
+output_dir : "output/"
+
+
+do_train : False
+do_eval  : False
+
+
+train_batch_size : 4
+cache_size : 256
+eval_batch_size : 8
+num_train_epochs : 3
+
+learning_rate : 5e-5
+num_log_steps : 10
+warmup_proportion : 0.1
+no_cuda : False
+local_rank : -1
+seed : 42
+gradient_accumulation_steps : 1
+
+
+optimize_on_cpu : False
+fp16 : False
+loss_scale : 128
+
+save_model_after_epoch : 1

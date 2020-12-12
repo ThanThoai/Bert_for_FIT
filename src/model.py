@@ -182,7 +182,7 @@ class BertForFIT(PreTrainedBertModel):
 
     def forward(self, input_ids, target):
 
-        articles, articles_mask, ops, ops_mask, question_pos, mask, high_mask = input_ids
+        articles, articles_mask, ops, ops_mask, question_pos, mask = input_ids
 
         bsz = ops.size(0)
         opnum = ops.size(1)
@@ -214,11 +214,9 @@ class BertForFIT(PreTrainedBertModel):
 
         acc = acc.sum(-1)
 
-        acc_high = (acc * high_mask).sum()
         acc = acc.sum()
-        acc_middle = acc - acc_high
         loss = loss.sum() / (mask.sum()) 
-        return loss, acc, acc_high, acc_middle
+        return loss, acc
 
     def init_zero_weight(self, shape):
         weight = next(self.parameters())
