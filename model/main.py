@@ -34,123 +34,52 @@ def accuracy(out, labels):
     return np.sum(outputs == labels)
             
 def main(path_yaml):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir",
-                        default='./data',
-                        type=str,
-                        help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
-    parser.add_argument("--bert_model", default='bert-large-uncased', type=str,
-                        help="Bert pre-trained model selected in the list: bert-base-uncased, "
-                             "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
-    parser.add_argument("--task_name",
-                        default='cloth',
-                        type=str,
-                        help="The name of the task to train.")
-    parser.add_argument("--output_dir",
-                        default='EXP/',
-                        type=str,
-                        required=True,
-                        help="The output directory where the model checkpoints will be written.")
-    parser.add_argument("--do_train",
-                        default=False,
-                        action='store_true',
-                        help="Whether to run training.")
-    parser.add_argument("--do_eval",
-                        default=False,
-                        action='store_true',
-                        help="Whether to run eval on the dev set.")
-    parser.add_argument("--train_batch_size",
-                        default=4,
-                        type=int,
-                        help="Total batch size for training.")
-    parser.add_argument("--cache_size",
-                        default=256,
-                        type=int,
-                        help="Total batch size for training.")
-    parser.add_argument("--eval_batch_size",
-                        default=8,
-                        type=int,
-                        help="Total batch size for eval.")
-    parser.add_argument("--learning_rate",
-                        default=5e-5,
-                        type=float,
-                        help="The initial learning rate for Adam.")
-    parser.add_argument("--num_train_epochs",
-                        default=3.0,
-                        type=float,
-                        help="Total number of training epochs to perform.")
-    parser.add_argument("--save_model_after_epoch",
-                        default= 1,
-                        type=int,
-                        help="Number of epoch to save the model after each epoch.")
-    parser.add_argument("--num_log_steps",
-                        default=10,
-                        type=int,
-                        help="Total number of training epochs to perform.")
-    parser.add_argument("--warmup_proportion",
-                        default=0.1,
-                        type=float,
-                        help="Proportion of training to perform linear learning rate warmup for. "
-                             "E.g., 0.1 = 10%% of training.")
-    parser.add_argument("--no_cuda",
-                        default=False,
-                        action='store_true',
-                        help="Whether not to use CUDA when available")
-    parser.add_argument("--local_rank",
-                        type=int,
-                        default=-1,
-                        help="local_rank for distributed training on gpus")
-    parser.add_argument('--seed',
-                        type=int,
-                        default=42,
-                        help="random seed for initialization")
-    parser.add_argument('--gradient_accumulation_steps',
-                        type=int,
-                        default=1,
-                        help="Number of updates steps to accumulate before performing a backward/update pass.")
-    parser.add_argument('--optimize_on_cpu',
-                        default=False,
-                        action='store_true',
-                        help="Whether to perform optimization and keep the optimizer averages on CPU")
-    parser.add_argument('--fp16',
-                        default=False,
-                        action='store_true',
-                        help="Whether to use 16-bit float precision instead of 32-bit")
-    parser.add_argument('--loss_scale',
-                        type=float, default=128,
-                        help='Loss scaling, positive power of 2 values can improve fp16 convergence.')
-
+    parser = argparse.ArgumentParser(description='BERT for FIT task')
     args = parser.parse_args()
-
     with open(path_yaml, 'r') as config_rd:
         config = yaml.load(config_rd)
 
+    args.data_dir = config['data_dir']
+    args.bert_model = config['bert_model']
+    args.task_name = config['task_name']
+    args.output_dir = config['output_dir']
+
+
     args.do_train = config['do_train']
     args.do_eval = config['do_eval']
-    args.output_dir = config['output_dir']
-    args.task_name = config['task_name']
-    args.seed = config['seed']
+
+    args.train_batch_size = config['train_batch_size']
+    args.cache_size = config['cache_size']
+    args.eval_batch_size = config['eval_batch_size']
     args.num_train_epochs = config['num_train_epochs']
-    args.save_model_after_epoch = config['save_model_after_epoch']
-    args.learning_rate = config['learning_rate']
-
-
-
 
     
-    if not args.do_train and not args.do_eval:
-        raise ValueError("At least one of `do_train` or `do_eval` must be True.")
+    args.learning_rate = config['learning_rate']
+    args.num_log_steps = config['num_log_steps']
+    args.warmup_proportion = config['warmup_proportion']
+    args.no_cuda = config['no_cuda']
+    args.local_rank = config['local_rank']
+    args.seed = config['seed']
+    args.gradient_accumulation_steps = config['gradient_accumulation_steps']
+
+    args.optimize_on_cpu = config['optimize_on_cpu']
+    args.fp16 = config['fp16']
+    args.loss_scale = config['loss_scale']
+
+    args.save_model_after_epoch = config['save_model_after_epoch']
+
+    
+    assert args.do_train or args.do_eval, "ERROR"
         
     suffix = time.strftime('%Y%m%d-%H%M%S')
     args.output_dir = os.path.join(args.output_dir, suffix)
-    
-    if os.path.exists(args.output_dir) and os.listdir(args.output_dir):
-        raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
     os.makedirs(args.output_dir, exist_ok=True)
-    
     logging = get_logger(os.path.join(args.output_dir, 'log.txt'))
     
-    data_file = {'train':'train',  'valid':'valid', 'test':'test'}
+    data_file = {
+        'train' : 'train',  
+        'valid' : 'valid'
+        }
     for key in data_file.keys():
         data_file[key] = data_file[key] + '-' + args.bert_model + '.pt'
     if args.local_rank == -1 or args.no_cuda:
@@ -219,7 +148,7 @@ def main(path_yaml):
     
     global_step = 0
     if args.do_train:
-        logging("***** Running training *****")
+        logging("[INFO] Running training")
         logging("  Batch size = {}".format(args.train_batch_size))
         logging("  Num steps = {}".format(num_train_steps))
 
@@ -240,13 +169,11 @@ def main(path_yaml):
                 loss.backward()
                 tr_loss += loss.item()
                 tr_acc += acc.item()
-                #print(tr_acc)
-                nb_tr_examples += inp[-2].sum()
+                nb_tr_examples += inp[-1].sum()
                 nb_tr_steps += 1
                 if (nb_tr_steps + 1) % args.gradient_accumulation_steps == 0:
                     if args.fp16 or args.optimize_on_cpu:
                         if args.fp16 and args.loss_scale != 1.0:
-                            # scale down gradients for fp16 training
                             for param in model.parameters():
                                 if param.grad is not None:
                                     param.grad.data = param.grad.data / args.loss_scale

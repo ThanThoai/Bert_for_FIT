@@ -12,6 +12,9 @@ def gelu(x):
 def swish(x):
     return x * torch.sigmoid(x)
 
+CONFIG_NAME = 'config.json'
+WEIGHTS_NAME = 'pytorch_model.bin'
+
 ACT2FN = {
     "gelu" : gelu,
     "relu" : torch.nn.functional.relu,
@@ -200,7 +203,7 @@ class BertIntermediate(nn.Module):
 
     def forward(self, hidden_states):
         hidden_states = self.dense(hidden_states)
-        hidden_states = self.intermediate_act(hidden_states)
+        hidden_states = self.intermediate_act_fn(hidden_states)
         return hidden_states
 
 

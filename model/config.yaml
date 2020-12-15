@@ -1,5 +1,5 @@
 data_dir : "./data"
-bert_model : "bert-large-uncased"
+bert_model : "bert-base-uncased"
 task_name : "FIT"
 output_dir : "output/"
 
