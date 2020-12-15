@@ -37,7 +37,7 @@ def main(path_yaml):
     parser = argparse.ArgumentParser(description='BERT for FIT task')
     args = parser.parse_args()
     with open(path_yaml, 'r') as config_rd:
-        config = yaml.load(config_rd)
+        config = yaml.load(config_rd, Loader=yaml.FullLoader)
 
     args.data_dir = config['data_dir']
     args.bert_model = config['bert_model']
