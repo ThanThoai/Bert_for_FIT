@@ -50,6 +50,8 @@ Chỉnh sửa file config.yaml để điều chỉnh các tham số. Sau đó ch
 python main.py
 ```
 
+Mô hình được huấn luyện trên GPU Tesla V100 16GB với batch_size = 2.
+
 ## How to test
 
 Tải các [model](https://drive.google.com/drive/folders/1C1GsV1MiDWa8NRFy-pHX8d5V-lKtIo_1?usp=sharing) đã huấn luyện. Chỉnh sửa đường dẫn model trong file test.py
