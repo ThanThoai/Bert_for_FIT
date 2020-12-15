@@ -17,7 +17,7 @@ git clone https://github.com/ThanThoai/Bert_for_FIT
 cd Bert_for_FIT
 pip install -r requirements.txt
  ```   
-Tải dataset, pretrain BERT và để vào thư mục cần thiết. Link pretrain model và link dataset. Cấu trúc thư mục:
+Tải dataset, pretrain BERT và để vào thư mục cần thiết. Link [BERT_pretrain](https://drive.google.com/drive/folders/171GhawHqUuOhnSFNl9AtQF1WPRqI-Ehf?usp=sharing) và [dataset](https://drive.google.com/drive/folders/1C1GsV1MiDWa8NRFy-pHX8d5V-lKtIo_1?usp=sharing). Cấu trúc thư mục:
  ```bash
   |--dataset
   |
@@ -52,7 +52,7 @@ python main.py
 
 ## How to test
 
-Tải các model đã huấn luyện. Chỉnh sửa đường dẫn model trong file test.py
+Tải các [model](https://drive.google.com/drive/folders/1C1GsV1MiDWa8NRFy-pHX8d5V-lKtIo_1?usp=sharing) đã huấn luyện. Chỉnh sửa đường dẫn model trong file test.py
 ```bash
 python test.py
 ```
