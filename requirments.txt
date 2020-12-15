@@ -1,3 +1,5 @@
 transformers
 boto3
 torch
+yaml
+numpy

@@ -90,12 +90,8 @@ def main(path_yaml):
         n_gpu = 1
         torch.distributed.init_process_group(backend='nccl')
         if args.fp16:
-            logging("16-bits training currently not supported in distributed training")
             args.fp16 = False 
-    logging("device {} n_gpu {} distributed training {}".format(device, n_gpu, bool(args.local_rank != -1)))
-    if args.gradient_accumulation_steps < 1:
-        raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
-                            args.gradient_accumulation_steps))
+    assert args.gradient_accumulation_steps >= 1, "must > 1"
 
     args.train_batch_size = int(args.train_batch_size / args.gradient_accumulation_steps)
 
@@ -179,7 +175,6 @@ def main(path_yaml):
                                     param.grad.data = param.grad.data / args.loss_scale
                         is_nan = set_optimizer_params_grad(param_optimizer, model.named_parameters(), test_nan=True)
                         if is_nan:
-                            logging("FP16 TRAINING: Nan in gradients, reducing loss scaling")
                             args.loss_scale = args.loss_scale / 2
                             model.zero_grad()
                             continue
@@ -205,7 +200,7 @@ def main(path_yaml):
 
 
     if args.do_eval and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
-        logging("***** Running evaluation *****")
+        logging("[INFO] Running evaluation ")
         logging("  Batch size = {}".format(args.eval_batch_size))
         valid_data = dataloader.Dataloader(args.data_dir, data_file['valid'], args.cache_size, args.eval_batch_size, device)
         model.eval()
@@ -220,67 +215,22 @@ def main(path_yaml):
                 tmp_eval_accuracy = tmp_eval_accuracy.sum()
             eval_loss += tmp_eval_loss.item()
             eval_accuracy += tmp_eval_accuracy.item()
-            # eval_h_acc += tmp_h_acc.item()
-            # eval_m_acc += tmp_m_acc.item()
-            nb_eval_examples += inp[-2].sum().item()
-            # nb_eval_h_examples += (inp[-2].sum(-1) * inp[-1]).sum().item()
+            nb_eval_examples += inp[-1].sum().item()
             nb_eval_steps += 1         
 
         eval_loss = eval_loss / nb_eval_steps
         eval_accuracy = eval_accuracy / nb_eval_examples
-        # eval_h_acc = eval_h_acc / nb_eval_h_examples
-        # eval_m_acc = eval_m_acc / (nb_eval_examples - nb_eval_h_examples)
         result = {'valid_eval_loss': eval_loss,
                   'valid_eval_accuracy': eval_accuracy,
-                #   'valid_h_acc':eval_h_acc,
-                #   'valid_m_acc':eval_m_acc,
                   'global_step': global_step}
 
         output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
-            logging("***** Valid Eval results *****")
+            logging("[INFO] Valid Eval results ")
             for key in sorted(result.keys()):
                 logging("  {} = {}".format(key, str(result[key])))
                 writer.write("%s = %s\n" % (key, str(result[key])))
                 
-    if args.do_eval and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
-        test_data = dataloader.Dataloader(args.data_dir, data_file['test'], args.cache_size, args.eval_batch_size, device)
-        logging("***** Running test evaluation *****")
-        logging("  Batch size = {}".format(args.eval_batch_size))
-        model.eval()
-        eval_loss, eval_accuracy = 0, 0
-        nb_eval_steps, nb_eval_examples = 0, 0
-        for inp, tgt in test_data.__getitem__(shuffle=False):
-
-            with torch.no_grad():
-                tmp_eval_loss, tmp_eval_accuracy = model(inp, tgt)
-            if n_gpu > 1:
-                tmp_eval_loss = tmp_eval_loss.mean() # mean() to average on multi-gpu.
-                tmp_eval_accuracy = tmp_eval_accuracy.sum()
-            eval_loss += tmp_eval_loss.item()
-            eval_accuracy += tmp_eval_accuracy.item()
-            # eval_h_acc += tmp_h_acc.item()
-            # eval_m_acc += tmp_m_acc.item()
-            nb_eval_examples += inp[-2].sum().item()
-            # nb_eval_h_examples += (inp[-2].sum(-1) * inp[-1]).sum().item()
-            nb_eval_steps += 1         
-
-        eval_loss = eval_loss / nb_eval_steps
-        eval_accuracy = eval_accuracy / nb_eval_examples
-        # eval_h_acc = eval_h_acc / nb_eval_h_examples
-        # eval_m_acc = eval_m_acc / (nb_eval_examples - nb_eval_h_examples)
-        result = {'valid_eval_loss': eval_loss,
-                  'valid_eval_accuracy': eval_accuracy,
-                #   'valid_h_acc':eval_h_acc,
-                #   'valid_m_acc':eval_m_acc,
-                  'global_step': global_step}
-
-        output_eval_file = os.path.join(args.output_dir, "test_results.txt")
-        with open(output_eval_file, "w") as writer:
-            logging("***** Test Eval results *****")
-            for key in sorted(result.keys()):
-                logging("  {} = {}".format(key, str(result[key])))
-                writer.write("%s = %s\n" % (key, str(result[key])))
 if __name__ == "__main__":
     path_yaml = './config.yaml'
     print(time.asctime())

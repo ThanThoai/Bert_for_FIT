@@ -17,17 +17,44 @@ git clone https://github.com/ThanThoai/Bert_for_FIT
 cd Bert_for_FIT
 pip install -r requirements.txt
  ```   
-Tải dataset, pretrain BERT và để vào thư mục cần thiết. 
+Tải dataset, pretrain BERT và để vào thư mục cần thiết. Link pretrain model và link dataset. Cấu trúc thư mục:
  ```bash
-# module folder
-cd project
+  |--dataset
+  |
+  |--model
+  |  |
+  |  |--data
+  |  |   |-train-{model_name}.pt
+  |  |   |-valied-{model_name}.pt
+  |  |   
+  |  |-src
+  |
+  |--pretrained
+  |  |
+  |  |--bert-base-uncased:
+  |  |       |
+  |  |       |--pytorch_model.bin
+  |  |       |--config.json
+  |  |       |--vocab.txt
+  |  |    
+  |  |--bert-large-uncased:
+  |  |       |
+  |  |       |--pytorch_model.bin
+  |  |       |--config.json
+  |  |       |--vocab.txt
 
-# run module (example: mnist as your main contribution)   
-python lit_classifier_main.py    
-```
+```  
+
 Chỉnh sửa file config.yaml để điều chỉnh các tham số. Sau đó chạy lệnh: 
 ```bash
 python main.py
+```
+
+## How to test
+
+Tải các model đã huấn luyện. Chỉnh sửa đường dẫn model trong file test.py
+```bash
+python test.py
 ```
 
   
