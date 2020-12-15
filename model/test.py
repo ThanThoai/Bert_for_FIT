@@ -1,26 +1,26 @@
 from data_util import Preprocess, Dataloader
 import argparse
 import os
-from pytorch_pretrained_bert.modeling import BertForCloth
-from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
+from src.model import BertForFIT
+from src.utils import PYTORCH_PRETRAINED_BERT_CACHE
 import torch
 
 model_name = "bert-base-uncased"
-folder_model = "../../pretrained"
-data_dir = "/content/datatest"
+folder_model = "../pretrained"
+# data_dir = "/content/datatest"
 
 parser = argparse.ArgumentParser(description = "Test BERT FIT")
 args = parser.parse_args()
 
-args.data_dir = data_dir 
+# args.data_dir = data_dir 
 args.pre = args.post = 0
 args.bert_model = os.path.join(folder_model, model_name)
 args.save_name = f"./data/test-{model_name}.pt"
-data = Preprocess(args)
+# data = Preprocess(args)
 
 
 model_test = "PATH_MODEL_TRAINED"
-model = BertForCloth.from_pretrained(args.bert_model, cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(-1))
+model = BertForFIT.from_pretrained(args.bert_model, cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(-1))
 model.load_state_dict(torch.load(model_test))
 model.to("cuda")
 model.eval()
