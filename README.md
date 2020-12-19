@@ -6,6 +6,7 @@
  
 ## Description   
 Xây dựng mô hình dự đoán từ cần điền vào chỗ trống và áp dụng vào giải đề thi Toiec.  
+![Model Architecture](https://drive.google.com/file/d/1jjTiTwLPB9DeBvSlmtTYxl40ZVdsxxgs/view?usp=sharing)
 
 ## How to run   
 Đầu tiên, cài đặt những thứ cần thiết:   
